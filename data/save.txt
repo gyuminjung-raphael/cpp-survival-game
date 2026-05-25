@@ -1,0 +1,29 @@
+24 32
+3
+99 100
+28 16 98
+7 6
+0
+1
+21
+1 Grass
+18 Log
+2 Oar
+3 Raft Base
+5 Reinforcement
+10 Resin
+1 Rope
+3 Sail
+24 Stone
+1 Venom
+2 Vine
+1 Wood
+3 Berry
+7 Fish
+2 Raw Meat
+24 Medical Herb
+1 Murky Vial
+1 Axe
+1 Fishing Rod
+1 Pickaxe
+1 Torch
