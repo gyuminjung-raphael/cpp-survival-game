@@ -1,19 +1,34 @@
-# Desert Island Survival
+# Island Survival — C++ Text-Based Survival Game
 
-A 2D text-based survival game built in C++11. The player wakes up stranded on a deserted island after a shipwreck with nothing but the will to survive. Manage hunger, thirst, and fatigue, fight off dangerous animals, gather resources, craft tools, and ultimately build a raft to escape.
+A C++11 terminal-based survival game developed as a 4-person university team project.  
+The game features multi-map exploration, survival stats, combat, inventory management, crafting, fishing, and save/load functionality.
+
+---
+
+## Team
+
+| Name | GitHub |
+|------|--------|
+| Yang Heemoon | heemoon72 |
+| Kim Jaehan | JAEHAN KIM |
+| Oh Philseung | PhilseungOh |
+| Jung Gyumin | gyuminjung-raphael |
 
 ---
 
-## Team — Group 212
+## Team Collaboration
 
-| Name | Student ID | GitHub |
-|------|------------|--------|
-| Yang Heemoon | 3036418162 | heemoon72 |
-| Kim Jaehan | 3036294762 | JAEHAN KIM |
-| Oh Philseung | 3036324957 | PhilseungOh |
-| Jung Gyumin | 3036279059 | 정규민 Gyumin Jung |
+The project was developed by a 4-person team through regular meetings, shared debugging sessions, and Git/GitHub-based collaboration.  
+All members contributed to feature development, testing, debugging, and final gameplay refinement.
 
----
+## My Contributions
+
+- Led the implementation of the inventory system, including inventory UI, screen switching, item dropping, and quantity handling.
+- Built and finalized the status UI components for displaying player stats and game state.
+- Developed time and movement-based survival mechanics, including night-time stat reduction and movement-count stat decay.
+- Improved UI alignment, keyboard controls, help menus, and emoji spacing for better terminal gameplay.
+- Contributed to crafting/material structure updates and environmental mechanics such as medical herb regeneration.
+- Reviewed gameplay, fixed bugs, and filmed the gameplay demo video.
 
 ## Game Description
 
@@ -21,10 +36,19 @@ You are a shipwreck survivor stranded on a remote island. The game is played ent
 
 Your goal is to gather enough materials to craft a complete **Raft** and escape. The game tracks an in-game clock (hours and days); needs decay faster at night, and dangerous predators become more common as days pass. Three difficulty modes (Easy, Normal, Hard) scale the speed of decay and the intensity of encounters.
 
-## Game Play Video
+## Gameplay Video
 
 https://youtu.be/GtZDGk9ylIg
 
+## Technical Highlights
+
+- Modular C++11 architecture with 14 source modules and separate header files.
+- File I/O for map loading and save/load functionality.
+- STL containers such as `std::vector` and `std::string` for inventory, maps, recipes, and game state.
+- Random event generation for combat encounters, loot drops, fishing outcomes, and resource respawns.
+- Makefile-based compilation workflow.
+- No third-party libraries required.
+  
 ### Zones
 
 | # | Zone | Description |
@@ -32,7 +56,7 @@ https://youtu.be/GtZDGk9ylIg
 | 1 | Beach | Starting area. Sandy shore with shipwreck debris, scorpions, and palm trees (Coconut source). |
 | 2 | Cave | Rocky cliffs enclosing a cave interior with a campfire — the only shelter for the first two days. |
 | 3 | Forest | Dense woods with fresh water, berries, Medical Herbs, and the widest variety of wildlife. |
-| 4 | Village | Abandoned settlement with ruins, a shelter (safe to sleep), a campfire, and a crafting workshop. |
+| 4 | Village | Abandoned settlement with ruins, a shelter (safe to sleep), and a campfire. |
 | 5 | Shore | Coastal dock where the final Raft is assembled and launched to win the game. |
 
 Maps are loaded from plain-text files in `data/` and rendered either as ASCII art or as a Unicode emoji grid (toggled with **V** in-game).
@@ -92,7 +116,7 @@ Items are backed by a **static registry** (`Item.cpp`) that stores every item's 
 ### 5. Crafting & Cooking
 Two separate recipe lists are accessible from distinct locations:
 
-**Workshop Crafting** (press **E** near the workshop in the village):
+**Workshop Crafting** (press **C** to open the crafting menu):
 - Processed materials: Vine, Rope, Log
 - Tools: Axe, Pickaxe, Knife, Fishing Rod, Torch
 - Healing: Bandage, First Aid Kit, Potion
@@ -120,7 +144,7 @@ Press **Enter** to stop the marker. The zone hit determines loot:
 Each cast consumes 1 Bait. The session continues until bait runs out or the player presses **Q**.
 
 ### 7. Save & Load System
-The game can be saved and loaded from `data/save.txt`. Saved data includes: player position and map, all four stats, current day/hour, move count, emoji/ASCII mode preference, and the full inventory. Load is available from the main menu; the file is written on manual save (press **S** in-game).
+The game can be saved and loaded from `data/save.txt`. Saved data includes: player position and map, all four stats, current day/hour, move count, emoji/ASCII mode preference, and the full inventory. Load is available from the main menu; the file is written on manual save (press **O** in-game).
 
 ### 8. Three Difficulty Modes
 Selected at the start of each new game:
@@ -140,132 +164,6 @@ Press **V** in-game to toggle between ASCII art and a Unicode emoji grid. In emo
 
 ---
 
-## Coding Requirements
-
-### Requirement 1 — Generation of Random Events
-
-`rand()` (seeded once with `srand(time(NULL))` inside `Monster.cpp`) drives every probabilistic event in the game:
-
-- **Bush encounter check** — every step near grass rolls `rand() % 100 < encounterChance`. The chance starts at 5% (Day 1) and ramps up by 2% per day, capped at 20% after Day 8.
-- **Dangerous vs. harmless spawn split** — a second roll against `dangerousAnimalChancePercent(day)` (20%→80%) decides which monster pool to draw from. Each monster is then selected by `rand() % pool.size()`.
-- **Combat damage variance** — every attack uses `baseAtk + (rand() % (variance*2+1)) - variance` so no two hits deal identical damage.
-- **Flee penalty rolls** — `randInRange(hpMin, hpMax)` and `randInRange(itemsMin, itemsMax)` determine HP lost and items forfeited on escape; a random inventory index is chosen for each forfeited item.
-- **Monster loot tables** — conditional `rand() % 100 < threshold` rolls per loot entry (e.g., 40% extra Raw Meat from Wild Boar, 25% Flint from rocks).
-- **Debris search** — `rand() % 100` against tiered thresholds selects between nothing, Murky Vial, Dried Entrails, or Resin.
-- **Berry foraging** — 5% chance per step on grass: `rand() % 100 < 5`.
-- **Fishing loot** — zone-specific `rand()` rolls award Fish or Cloth Scrap depending on where the player stopped the bar.
-- **Respawn placement** — when a collected tile respawns at a new random position, the code rejection-samples random (row, col) pairs until it finds an open, walkable cell.
-
-**Files**: `Monster.cpp`, `Combat.cpp`, `Fishing.cpp`, `Game.cpp`
-
----
-
-### Requirement 2 — Data Structures from the STL
-
-The project uses `std::vector` and `std::string` as the primary STL containers throughout:
-
-| Container | Location | Purpose |
-|-----------|----------|---------|
-| `std::vector<Item>` | `Inventory` (private field) | Runtime item list; grows/shrinks as items are picked up or consumed |
-| `std::vector<Item>` | `SaveData` | Inventory snapshot serialised to and from the save file |
-| `std::vector<std::string>` | `Map::grid` | Each row of the loaded map stored as one string |
-| `std::vector<ExitPoint>` | `Map::exitPoints` | All exit tiles registered during map loading |
-| `std::vector<Recipe>` | `getCraftingRecipes()`, `getCookingRecipes()` | Full recipe tables built and returned at runtime |
-| `std::vector<Ingredient>` | `Recipe::ingredients` | Per-recipe ingredient list (nested inside `Recipe`) |
-| `std::vector<std::pair<std::string,int>>` | `Monster::getDrops()` | Loot table as name–quantity pairs |
-| `std::vector<PendingRespawn>` | `Game.cpp` (local) | Queue of tiles scheduled for delayed re-placement |
-| `std::vector<std::string>` | `Monster::getAsciiArt()` | Multi-line ASCII art returned per monster type |
-| `std::string` | Throughout | Item names, map rows, UI messages, file paths |
-
-Supporting structs (`Item`, `ItemDef`, `Recipe`, `Ingredient`, `ExitPoint`, `PendingRespawn`, `SaveData`, `PlayerStatus`) work alongside these containers to group related fields.
-
-**Files**: `Inventory.h`, `Map.h`, `Crafting.h`, `Monster.h`, `SaveLoad.h`, `Game.cpp`
-
----
-
-### Requirement 3 — Dynamic Memory Management
-
-Dynamic allocation is managed implicitly through STL containers whose internal buffers are heap-allocated and automatically resized via RAII:
-
-- **`Map::grid`** (`std::vector<std::string>`) — allocated as the map file is read. Each of the 30 rows is pushed into the vector and then resized to exactly `cols` characters with `grid[r].resize(cols, ' ')` to pad short lines.
-- **`Inventory::items`** (`std::vector<Item>`) — starts empty on game start; grows via `push_back` each time an item is collected, and shrinks via `erase` when an item's quantity reaches zero. The inventory can hold an arbitrary number of distinct item stacks.
-- **`SaveData::inventoryItems`** (`std::vector<Item>`) — rebuilt from scratch on every load by parsing the save file line by line and calling `push_back` for each entry.
-- **`pendingRespawns`** (`std::vector<PendingRespawn>` in `Game.cpp`) — grows each time the player interacts with a respawnable tile (herb, debris, monster) and is pruned each tick as entries come due. Its size is unbounded, allowing many pending respawns simultaneously.
-- **Recipe vectors** — `getCraftingRecipes()` and `getCookingRecipes()` construct and return `std::vector<Recipe>` objects (each containing a nested `std::vector<Ingredient>`) by value; Return Value Optimisation (RVO) eliminates unnecessary copies.
-
-No raw `new` or `delete` calls are used; all heap lifetimes are managed by their owning containers.
-
-**Files**: `Map.cpp`, `Inventory.cpp`, `SaveLoad.cpp`, `Game.cpp`, `Crafting.cpp`
-
----
-
-### Requirement 4 — File Input / Output
-
-**Map loading** (`Map.cpp` — `Map::load()`):
-
-```
-data/map_beach.txt
-data/map_cave.txt
-data/map_forest.txt
-data/map_village.txt
-data/map_shore.txt
-```
-
-- Opens each file with `std::ifstream`.
-- First line parsed for map dimensions (`rows cols`).
-- Remaining lines read with `std::getline` into `Map::grid`; rows shorter than `cols` are padded.
-- `@` spawn markers are recorded (stored as `spawnRow`/`spawnCol`) then replaced with a blank tile so they don't appear during play.
-- Exit tiles (`E`, `<`, `>`, `^`, `v`) are registered into `Map::exitPoints` while scanning the grid.
-
-**Save / Load** (`SaveLoad.cpp`):
-
-- `saveGame()` writes a compact line-per-field plain-text record to `data/save.txt` using `std::ofstream`. Fields written in order: position, map ID, HP/maxHp, hunger/thirst/fatigue, day/hour, move count, emoji-mode flag, item count, and one `"<qty> <name>"` line per inventory item.
-- `loadGame()` reads the file with `std::ifstream` and a custom `readLine()` helper that binds each line to a fresh `std::istringstream` for safe per-field token extraction without cross-line bleed.
-- `hasSaveFile()` performs a lightweight parse attempt and returns a `bool` — used by the main menu to decide whether to offer the **Continue** option.
-
-**Files**: `Map.cpp`, `SaveLoad.cpp`, `SaveLoad.h`
-
----
-
-### Requirement 5 — Program Code in Multiple Files
-
-The project is split across **14 compilation units**, each paired with a header that exposes only its public interface. All headers use `#ifndef` include guards.
-
-| File pair | Responsibility |
-|-----------|---------------|
-| `main.cpp` | Entry point; initialises the UTF-8 console (Windows), runs the title screen and main-menu loop |
-| `Game.h / Game.cpp` | Core game loop: map rendering, player input, per-step tick, win/lose detection |
-| `Map.h / Map.cpp` | Map loading, ASCII & emoji rendering, walkability checks, exit detection, `MapManager` |
-| `Player.h / Player.cpp` | Player stats (HP, hunger, thirst, fatigue), position, movement, needs-decay |
-| `Inventory.h / Inventory.cpp` | Item storage: add, consume, remove, sort, equip operations |
-| `Item.h / Item.cpp` | Static item registry (`ItemDef` array) and name-based lookup |
-| `Crafting.h / Crafting.cpp` | Recipe lists, craft-eligibility check, craft execution, paginated crafting/cooking UI |
-| `Combat.h / Combat.cpp` | Turn-based combat loop, flee mechanic, poison, difficulty scaling |
-| `Monster.h / Monster.cpp` | Monster stats, ASCII art, loot tables, map-aware spawn-pool selection |
-| `Fishing.h / Fishing.cpp` | Timing-based fishing minigame with animated bar and zone-based loot |
-| `SaveLoad.h / SaveLoad.cpp` | Game-state serialisation to and from `data/save.txt` |
-| `InventoryUI.h / InventoryUI.cpp` | Inventory screen rendering and input handling |
-| `UI.h / UI.cpp` | Shared layout helpers: centering, padding, title/menu screens, difficulty picker |
-| `status_ui.h / status_ui.cpp` | HUD top bar: clock, time-of-day, location label, stat display |
-
-The `Makefile` compiles each `.cpp` to its own `.o` independently, so only modified files are recompiled on subsequent builds.
-
----
-
-## Non-Standard Libraries
-
-**None.** The game uses only the ISO C++11 standard library.
-
-Two platform system headers are conditionally included for low-level terminal I/O in the fishing minigame and title screen:
-
-| Header | Platform | Used for |
-|--------|----------|---------|
-| `<windows.h>`, `<conio.h>` | Windows | `_kbhit()` / `_getch()` for non-blocking key reads; `SetConsoleOutputCP(CP_UTF8)` for emoji display |
-| `<unistd.h>`, `<termios.h>`, `<sys/select.h>` | macOS / Linux | `usleep()` for frame timing; `select()` for non-blocking stdin polling |
-
-These are OS system headers included with the compiler toolchain — no third-party installation is required.
-
----
 
 ## Compilation & Execution
 
@@ -279,7 +177,7 @@ These are OS system headers included with the compiler toolchain — no third-pa
 
 ```bash
 git clone <repo-url>
-cd Group_212
+cd cpp-survival-game
 make
 ```
 
@@ -310,10 +208,10 @@ Removes all `.o` files and the `game` executable.
 5. Move with **W A S D**.
 6. Press **E** to interact with adjacent tiles (chop trees, open campfire, search debris).
 7. Press **I** to open your inventory — use food, equip tools, or drop excess items.
-8. Press **C** near the village workshop to craft tools and raft components.
+8. Press **C** to open the crafting menu.
 9. Press **V** to toggle between ASCII and emoji display.
 10. Press **Z** inside the cave or village shelter to sleep and restore Fatigue.
-11. Press **S** to save your progress at any time; **Q** to quit.
+11. Press **O** to save your progress at any time; **Q** to quit.
 12. Build all Raft components, assemble the Raft at the Shore dock, and escape to win!
 
 ### Controls Reference
@@ -326,7 +224,7 @@ Removes all `.o` files and the `game` executable.
 | C | Open crafting workshop |
 | Z | Sleep (cave interior or village shelter only) |
 | V | Toggle emoji / ASCII render mode |
-| S | Save game |
+| O | Save game |
 | H | Help / Survival Guide |
 | Q | Quit |
 
@@ -335,7 +233,7 @@ Removes all `.o` files and the `game` executable.
 ## File Structure
 
 ```
-Group_212/
+cpp-survival-game/
 ├── Makefile
 ├── README.md
 ├── data/
